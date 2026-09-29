@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HEXSLINGER — 魔法の撃ち合い</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <canvas id="gl"></canvas>
+
+  <!-- ===== TITLE ===== -->
+  <section id="scr-title" class="screen">
+    <div class="logo">
+      <div class="logo-jp">ヘックススリンガー</div>
+      <div class="logo-en">HEXSLINGER</div>
+      <div class="logo-sub">右手の形が、銃になる。— 4vs4 魔法チームデスマッチ</div>
+    </div>
+    <div class="menu">
+      <button class="btn big pink" data-go="select">あそぶ <small>PLAY</small></button>
+      <button class="btn" data-go="howto">あそびかた <small>HOW TO PLAY</small></button>
+    </div>
+  </section>
+
+  <!-- ===== HOW TO ===== -->
+  <section id="scr-howto" class="screen hidden">
+    <button class="btn back" data-go="title">← もどる <small>BACK</small></button>
+    <h1 class="head">あそびかた<small>HOW TO PLAY</small></h1>
+    <div class="howto-grid">
+      <div class="col">
+        <div class="card">
+          <h3>👉 右手の形が、銃になる。</h3>
+          <p>魔法使いたちの撃ち合い！ <b class="pk">右手のジェスチャー</b>がそのまま武器になり、<b class="pk">左手</b>で魔法を唱える。</p>
+          <p><b class="pk">4v4 チームデスマッチ</b>：敵を倒すとチームに1点。先に <b class="pk">25キル</b> するか、時間切れの時点でリードしていたチームの勝ち。やられても4秒でリスポーン。</p>
+          <p class="gr">💚 ヒーラーの魔弾は味方に当てると回復する！</p>
+        </div>
+        <div class="card">
+          <h3>✋ ジェスチャー早見表 <small>GESTURE CHART</small></h3>
+          <div class="gchart" id="gchart"></div>
+        </div>
+        <div class="card pinkbg">
+          <h3>🙌 両手ルール <small>TWO-HANDED RULE</small></h3>
+          <p><b class="pk">👌 スコープサイン</b>と<b class="pk">🙏 シールバラージ</b>は両手を使う強力なジェスチャー。構えている間は左手がふさがるので<b class="pk">魔法が使えない</b>。</p>
+        </div>
+      </div>
+      <div class="card col">
+        <h3>⌨ そうさ <small>CONTROLS</small></h3>
+        <table class="keys">
+          <tr><td><kbd>WASD</kbd></td><td>移動 <small>MOVE</small></td></tr>
+          <tr><td><kbd>Space</kbd></td><td>ジャンプ <small>JUMP</small></td></tr>
+          <tr><td><kbd>Shift</kbd></td><td>ダッシュ <small>SPRINT</small></td></tr>
+          <tr><td><kbd>左クリック</kbd></td><td>撃つ <small>FIRE</small></td></tr>
+          <tr><td><kbd>右クリック</kbd></td><td>エイム / スコープ <small>AIM</small></td></tr>
+          <tr><td><kbd>R</kbd></td><td>リロード（指先をフーッ）<small>RELOAD</small></td></tr>
+          <tr><td><kbd>1/2/3・ホイール</kbd></td><td>ジェスチャー変更 <small>GESTURE</small></td></tr>
+          <tr><td><kbd>Q/E/F</kbd></td><td>魔法 <small>SPELLS</small></td></tr>
+          <tr><td><kbd>Tab</kbd></td><td>スコアボード <small>SCORES</small></td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>ポーズ <small>PAUSE</small></td></tr>
+          <tr><td><kbd>F9</kbd></td><td>録画 開始/停止 <small>RECORD</small></td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== HERO SELECT ===== -->
+  <section id="scr-select" class="screen hidden">
+    <button class="btn back" data-go="title">← もどる <small>BACK</small></button>
+    <h1 class="head">ヒーロー選択<small>CHOOSE YOUR SLINGER</small></h1>
+    <div class="mode-tag">4v4 チームデスマッチ・先取 25</div>
+    <div class="heroes" id="heroes"></div>
+    <div class="select-foot">
+      <div class="diff">
+        <span class="lbl">ボットの強さ<small>BOT DIFFICULTY</small></span>
+        <button class="btn seg" data-diff="0">かんたん<small>EASY</small></button>
+        <button class="btn seg on" data-diff="1">ふつう<small>NORMAL</small></button>
+        <button class="btn seg" data-diff="2">むずかしい<small>HARD</small></button>
+      </div>
+      <div class="hint">←/→ で選択・Enter で出撃</div>
+      <button class="btn sortie" id="sortie"><span id="sortie-name">トリガー</span> で<b>出撃！</b><small>SORTIE!</small></button>
+    </div>
+  </section>
+
+  <!-- ===== HUD ===== -->
+  <section id="hud" class="hidden">
+    <div class="scorebar">
+      <div class="team azure"><span class="you">YOU</span><span class="tn">AZURE<small>アズール</small></span><span class="ts" id="s-azure">0</span></div>
+      <div class="clock"><span id="clock">6:00</span><small>先取 25 KILL</small></div>
+      <div class="team blaze"><span class="ts" id="s-blaze">0</span><span class="tn">BLAZE<small>ブレイズ</small></span></div>
+    </div>
+    <div id="killfeed"></div>
+    <div id="crosshair"><div class="ring"></div><div class="dot"></div></div>
+    <div id="hitmark"></div>
+    <div id="scope" class="hidden"><div class="lens"></div></div>
+    <div id="center-msg"></div>
+    <div id="popups"></div>
+    <div class="me">
+      <div class="portrait" id="me-icon">👉</div>
+      <div class="bars">
+        <div class="nm"><b id="me-name">TRIGGER</b> <span id="me-jp">トリガー</span> <span class="role" id="me-role">アタッカー</span></div>
+        <div class="bar"><i>HP</i><div class="track"><div class="fill hp" id="hp-fill"></div></div><span id="hp-txt">100</span></div>
+        <div class="bar"><i>MP</i><div class="track"><div class="fill mp" id="mp-fill"></div></div><span id="mp-txt">150</span></div>
+      </div>
+    </div>
+    <div class="gestures" id="gest-bar"></div>
+    <div class="spells" id="spell-bar"></div>
+    <div id="reload-tip"></div>
+    <div id="death" class="hidden">
+      <div class="big">やられた！<small>YOU GOT HEXED</small></div>
+      <div class="killer"><span class="cd" id="respawn-cd">4</span><div class="kcard"><small>撃破者 KILLED BY</small><b id="killer-name"></b><span id="killer-weapon"></span></div></div>
+    </div>
+    <div id="rec" class="hidden">● REC</div>
+  </section>
+
+  <!-- ===== SCOREBOARD / RESULT ===== -->
+  <section id="board" class="hidden"></section>
+  <section id="scr-result" class="screen hidden"></section>
+
+  <section id="pause" class="screen hidden">
+    <h1 class="head">ポーズ<small>PAUSED</small></h1>
+    <div class="menu">
+      <button class="btn big pink" id="resume">つづける <small>RESUME</small></button>
+      <button class="btn" data-go="title">タイトル <small>TITLE</small></button>
+    </div>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
